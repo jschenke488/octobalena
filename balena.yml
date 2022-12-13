@@ -2,7 +2,7 @@ slug: "octobalena"
 name: "Octobalena"
 type: "sw.application"
 assets:
-  - url: "https://github.com/MatthewCroughan/octobalena"
+  - url: "https://github.com/jschenke488/octobalena"
     name: "repository"
   - url: "https://user-images.githubusercontent.com/26458780/69140128-cba46e80-0ab9-11ea-8980-075f71039643.png"
     name: "logo"
