@@ -57,7 +57,9 @@ RUN pip3 install --no-cache-dir \
     "https://glare.vercel.app/eyal0/OctoPrint-PrintTimeGenius/zip" \
     "https://glare.vercel.app/jneilliii/OctoPrint-BLTouch/zip" \
     "https://glare.vercel.app/jneilliii/OctoPrint-BedLevelVisualizer/zip" \
-    "https://glare.vercel.app/OctoPrint/OctoPrint-FirmwareUpdater/zip"
+    "https://glare.vercel.app/OctoPrint/OctoPrint-FirmwareUpdater/zip" \
+    "https://glare.vercel.app/Birkbjo/OctoPrint-Themeify/zip" \
+    "https://glare.vercel.app/SimplyPrint/OctoPrint-Creality2xTemperatureReportingFix/zip"
 
 # Adds support for obtaining OCTOPRINT_APIKEY and setting the octodash service variable automatically
 # https://github.com/MatthewCroughan/octobalena/pull/10
