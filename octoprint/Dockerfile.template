@@ -26,8 +26,8 @@ RUN apt-get update && install_packages libavahi-compat-libdnssd1 \
 # Update pip
 RUN pip3 install --upgrade pip
 
-# Install OctoPrint v1.6.1
-RUN pip3 install OctoPrint==1.6.1
+# Install OctoPrint
+RUN pip3 install --no-cache-dir OctoPrint
 
 # Install PyBonjour and Zeroconf
 RUN pip install --no-cache-dir https://github.com/DynamicDevices/pybonjour-python3/archive/master.zip zeroconf
@@ -36,13 +36,15 @@ RUN pip install --no-cache-dir https://github.com/DynamicDevices/pybonjour-pytho
 RUN pip3 install supervisor
 
 # Install Python dependencies for MattaCloud
-RUN pip3 install aiohttp aiortc numpy opencv-python
+#RUN pip3 install aiohttp aiortc numpy opencv-python
 
 # Install paho mqtt for power control
-RUN pip3 install paho-mqtt
+#RUN pip3 install paho-mqtt
 
 # Build mjpg-streamer
 #RUN ln -s /usr/include/linux/videodev2.h /usr/include/linux/videodev.h
+RUN ln -s /usr/include /opt/vc
+RUN ln -s /usr/lib/aarch64-linux-gnu /opt/vc/lib
 RUN git clone https://github.com/jacksonliam/mjpg-streamer.git && cd mjpg-streamer/mjpg-streamer-experimental \
  && sed -i 's|#include <linux/stat.h>|//#include <linux/stat.h>|g' utils.c \
  && make && make install
@@ -50,19 +52,12 @@ RUN git clone https://github.com/jacksonliam/mjpg-streamer.git && cd mjpg-stream
 # OctoDash requirements, it is stated these plugins are mandatory on the project wiki:
 # https://github.com/UnchartedBull/OctoDash/wiki/Installation#automatic-installation
 RUN pip3 install --no-cache-dir \ 
-    "https://github.com/marian42/octoprint-preheat/archive/0.7.2.zip" \
-    "https://github.com/OllisGit/OctoPrint-DisplayLayerProgress/archive/1.26.0.zip" \
-    "https://github.com/kantlivelong/OctoPrint-PSUControl/archive/1.0.6.zip" \
-    "https://github.com/OctoPrint/OctoPrint-MQTT/archive/0.8.10.zip" \
-    "https://github.com/OllisGit/OctoPrint-FilamentManager/archive/1.7.2.zip" \
-    "https://github.com/eyal0/OctoPrint-PrintTimeGenius/archive/2.2.8.zip" \
-    "https://github.com/jneilliii/OctoPrint-UltimakerFormatPackage/archive/0.2.2.zip" \
-    "https://github.com/jneilliii/OctoPrint-BLTouch/archive/0.3.4.zip" \
-    "https://github.com/jneilliii/OctoPrint-BedLevelVisualizer/archive/1.0.1.zip" \
-    "https://github.com/FormerLurker/Octolapse/archive/v0.4.1.zip" \
-    "https://github.com/johnnyruz/OctoPrint-OctoVox/archive/0.1.6.zip" \
-    "https://github.com/costas-basdekis/MarlinGcodeDocumentation/archive/v0.12.0.zip" \
-    "https://github.com/OctoPrint/OctoPrint-FirmwareUpdater/archive/1.11.0.zip"
+    "https://github.com/OllisGit/OctoPrint-DisplayLayerProgress/releases/latest/download/master.zip" \
+    "https://github.com/OllisGit/OctoPrint-FilamentManager/releases/latest/download/master.zip" \
+    "https://glare.vercel.app/eyal0/OctoPrint-PrintTimeGenius/zip" \
+    "https://glare.vercel.app/jneilliii/OctoPrint-BLTouch/zip" \
+    "https://glare.vercel.app/jneilliii/OctoPrint-BedLevelVisualizer/zip" \
+    "https://glare.vercel.app/OctoPrint/OctoPrint-FirmwareUpdater/zip"
 
 # Adds support for obtaining OCTOPRINT_APIKEY and setting the octodash service variable automatically
 # https://github.com/MatthewCroughan/octobalena/pull/10
@@ -73,16 +68,21 @@ COPY start-mjpg-streamer.sh /usr/src/octobalena/start-mjpg-streamer.sh
 COPY ./config.yaml /data/config.yaml
 
 # Copy in the script that allows us to interface with espurna relays over mqtt
-COPY ./mqtt_espurna_control.py /usr/src/octobalena/mqtt_espurna_control.py
+#COPY ./mqtt_espurna_control.py /usr/src/octobalena/mqtt_espurna_control.py
 
 # Add root user to video group to make vcgencmd work
-RUN usermod -aG video root
+#RUN usermod -aG video root
 
 # Generate SSL cert
 RUN cd /etc/ssl && openssl req -x509 -newkey rsa:4096 -keyout key.pem -out cert.pem -days 365 --nodes -subj "/C=GB/ST=Merseyside/L=Liverpool/O=Dynamic Devices/OU=Org/CN=localhost" \
  && cat cert.pem key.pem > ssl-certs.pem
 COPY ./supervisord.conf /etc/supervisor/supervisord.conf
-COPY ./udevd.sh /app/udevd.sh
+#COPY ./udevd.sh /app/udevd.sh
 COPY ./haproxy.cfg /etc/haproxy/haproxy.cfg
 
-CMD ["/app/udevd.sh"]
+WORKDIR /usr/src/octobalena
+COPY udevd.sh udevd.sh
+COPY start.sh start.sh
+
+#CMD ["/usr/src/octobalena/udevd.sh"]
+CMD ["bash", "/usr/src/octobalena/udevd.sh"]
